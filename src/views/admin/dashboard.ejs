@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="id">
+<head><%- include('../partials/head') %></head>
+<body>
+  <%- include('../partials/navbar') %>
+  <main class="px-4 py-12 sm:px-6 lg:px-8">
+    <section class="mx-auto max-w-7xl">
+      <div class="mb-8 flex flex-col gap-4 rounded-[2rem] bg-white/70 p-6 shadow-soft backdrop-blur-xl md:flex-row md:items-center md:justify-between md:p-8">
+        <div>
+          <p class="section-kicker">Admin panel</p>
+          <h1 class="section-title">Dashboard</h1>
+        </div>
+        <div class="flex gap-2">
+          <a href="/admin/templates" class="rounded-full bg-slate-950 px-5 py-3 text-sm font-black text-white">Kelola Template</a>
+          <form action="/admin/logout" method="POST"><button class="control-btn" type="submit">Logout</button></form>
+        </div>
+      </div>
+      <div class="grid gap-5 md:grid-cols-4">
+        <div class="admin-stat"><span>Total Template</span><b><%= stats.totalTemplates %></b></div>
+        <div class="admin-stat"><span>Template Aktif</span><b><%= stats.activeTemplates %></b></div>
+        <div class="admin-stat"><span>Total Hasil</span><b><%= stats.totalResults %></b></div>
+        <div class="admin-stat"><span>Total Pemakaian</span><b><%= stats.totalUsage %></b></div>
+      </div>
+      <div class="mt-8 rounded-[2rem] bg-white/70 p-6 shadow-soft backdrop-blur-xl">
+        <div class="mb-5 flex items-center justify-between">
+          <h2 class="text-xl font-black text-slate-950">Template terbaru</h2>
+          <a href="/admin/templates" class="font-black text-slate-700 underline decoration-slate-300 underline-offset-8">Lihat semua</a>
+        </div>
+        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <% templates.forEach((template) => { %>
+            <article class="rounded-[1.5rem] bg-white p-4 shadow-sm">
+              <img src="<%= template.previewImage %>" class="aspect-[4/3] w-full rounded-[1rem] object-cover" alt="<%= template.name %>" />
+              <h3 class="mt-4 font-black text-slate-950"><%= template.name %></h3>
+              <p class="text-sm font-semibold text-slate-500"><%= template.category %> · <%= template.ratio %></p>
+            </article>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="id">
+<head><%- include('../partials/head') %></head>
+<body>
+  <%- include('../partials/navbar') %>
+  <main class="px-4 py-12 sm:px-6 lg:px-8">
+    <section class="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[.95fr_1.05fr]">
+      <div class="rounded-[2.2rem] bg-white/70 p-5 shadow-float backdrop-blur-2xl">
+        <img src="<%= template.previewImage %>" alt="<%= template.name %>" class="aspect-[4/5] w-full rounded-[1.8rem] object-cover" />
+      </div>
+      <div class="rounded-[2.2rem] bg-white/70 p-7 shadow-soft backdrop-blur-2xl md:p-10">
+        <div class="mb-5 flex flex-wrap gap-2">
+          <span class="pill"><%= template.category %></span>
+          <span class="pill"><%= template.ratio %></span>
+          <span class="pill"><%= template.photoSlots.length %> slot foto</span>
+          <span class="pill"><%= template.canvas.width %>×<%= template.canvas.height %></span>
+        </div>
+        <h1 class="text-4xl font-black tracking-tight text-slate-950 md:text-6xl"><%= template.name %></h1>
+        <p class="mt-5 text-lg leading-8 text-slate-600"><%= template.description %></p>
+        <div class="mt-8 grid gap-4 sm:grid-cols-3">
+          <div class="rounded-[1.5rem] bg-slate-50 p-5"><b class="block text-2xl text-slate-950"><%= template.photoSlots.length %></b><span class="text-sm font-semibold text-slate-500">Slot foto</span></div>
+          <div class="rounded-[1.5rem] bg-slate-50 p-5"><b class="block text-2xl text-slate-950"><%= template.textElements.length %></b><span class="text-sm font-semibold text-slate-500">Elemen teks</span></div>
+          <div class="rounded-[1.5rem] bg-slate-50 p-5"><b class="block text-2xl text-slate-950"><%= template.decorations.length %></b><span class="text-sm font-semibold text-slate-500">Dekorasi</span></div>
+        </div>
+        <div class="mt-8 rounded-[1.5rem] border border-dashed border-slate-200 bg-white/70 p-5">
+          <h2 class="font-black text-slate-950">Alur pakai</h2>
+          <ol class="mt-3 grid gap-3 text-sm font-semibold text-slate-600 sm:grid-cols-3">
+            <li class="rounded-2xl bg-slate-50 p-4">1. Buka kamera</li>
+            <li class="rounded-2xl bg-slate-50 p-4">2. Isi semua slot</li>
+            <li class="rounded-2xl bg-slate-50 p-4">3. Edit dan download</li>
+          </ol>
+        </div>
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+          <a href="/create/<%= template.slug %>" class="inline-flex flex-1 justify-center rounded-full bg-slate-950 px-7 py-4 text-sm font-black text-white shadow-soft">Pakai Template</a>
+          <a href="/templates" class="inline-flex justify-center rounded-full border border-slate-200 bg-white px-7 py-4 text-sm font-black text-slate-800 shadow-sm">Kembali</a>
+        </div>
+      </div>
+    </section>
+  </main>
+  <%- include('../partials/footer') %>
+</body>
+</html>

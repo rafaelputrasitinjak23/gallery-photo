@@ -1,0 +1,20 @@
+<header class="sticky top-0 z-40 border-b border-white/50 bg-white/70 backdrop-blur-2xl">
+  <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+    <a href="/" class="flex items-center gap-3">
+      <span class="grid h-11 w-11 place-items-center rounded-2xl bg-slate-950 text-white shadow-soft">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7.7C4 6.2 5.2 5 6.7 5h10.6C18.8 5 20 6.2 20 7.7v8.6c0 1.5-1.2 2.7-2.7 2.7H6.7C5.2 19 4 17.8 4 16.3V7.7Z" stroke="currentColor" stroke-width="1.8"/><path d="m7 15 3.1-3.1a1 1 0 0 1 1.4 0L14 14.4l1-1a1 1 0 0 1 1.4 0L19 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M16.5 9.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+      </span>
+      <span>
+        <span class="block text-base font-black tracking-tight text-slate-950">Aesthetic Gallery</span>
+        <span class="block text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">camera template</span>
+      </span>
+    </a>
+    <nav class="hidden items-center gap-2 md:flex">
+      <a class="nav-link <%= currentPath === '/' ? 'active' : '' %>" href="/">Home</a>
+      <a class="nav-link <%= currentPath.startsWith('/templates') ? 'active' : '' %>" href="/templates">Template</a>
+      <a class="nav-link <%= currentPath.startsWith('/history') ? 'active' : '' %>" href="/history">Riwayat</a>
+      <a class="nav-link" href="/admin/login">Admin</a>
+    </nav>
+    <a href="/templates" class="rounded-full bg-slate-950 px-5 py-3 text-sm font-bold text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-slate-800">Mulai</a>
+  </div>
+</header>
