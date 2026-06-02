@@ -46,7 +46,7 @@ async function singleTemplateApi(req, res, next) {
 async function adminCreateTemplate(req, res, next) {
   try {
     const payload = sanitizeTemplatePayload(req.body);
-    if (!payload.name || !payload.slug || !payload.photoSlots.length) {
+    if (!payload.name || !payload.slug || !(Array.isArray(payload.photoSlots) && payload.photoSlots.length)) {
       return res.status(400).json({ success: false, message: 'Data template belum lengkap.' });
     }
 
@@ -70,7 +70,7 @@ async function adminCreateTemplate(req, res, next) {
 async function adminUpdateTemplate(req, res, next) {
   try {
     const payload = sanitizeTemplatePayload(req.body);
-    if (!payload.name || !payload.slug || !payload.photoSlots.length) {
+    if (!payload.name || !payload.slug || !(Array.isArray(payload.photoSlots) && payload.photoSlots.length)) {
       return res.status(400).json({ success: false, message: 'Data template belum lengkap.' });
     }
 

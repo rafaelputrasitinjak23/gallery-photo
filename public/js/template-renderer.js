@@ -26,11 +26,11 @@
   }
 
   function drawCover(ctx, img, x, y, width, height, transform) {
-    const scale = Math.max(width / img.width, height / img.height) * (Number(transform.zoom) || 1);
+    const scale = Math.max(width / img.width, height / img.height) * (Number(transform && transform.zoom) || 1);
     const dw = img.width * scale;
     const dh = img.height * scale;
-    const dx = x + (width - dw) / 2 + (Number(transform.offsetX) || 0);
-    const dy = y + (height - dh) / 2 + (Number(transform.offsetY) || 0);
+    const dx = x + (width - dw) / 2 + (Number(transform && transform.offsetX) || 0);
+    const dy = y + (height - dh) / 2 + (Number(transform && transform.offsetY) || 0);
     ctx.drawImage(img, dx, dy, dw, dh);
   }
 
@@ -46,7 +46,10 @@
       soft: 'brightness(1.08) contrast(.94) saturate(1.02)',
       contrast: 'contrast(1.22) saturate(1.08)',
       fade: 'brightness(1.06) contrast(.82) saturate(.78)',
-      blur: 'blur(1.2px) brightness(1.04)'
+      blur: 'blur(1.2px) brightness(1.04)',
+      enhance: 'brightness(1.1) contrast(1.08) saturate(1.16)',
+      cinematic: 'contrast(1.13) saturate(1.1) brightness(1.03)',
+      creamy: 'sepia(.12) brightness(1.08) contrast(.96) saturate(1.05)'
     };
     return filters[filterName] || filters.normal;
   }
@@ -64,26 +67,44 @@
     return gradient;
   }
 
-  async function drawBackground(ctx, template) {
+  function normalizeObject(value) {
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  }
+
+  function getDesign(values) {
+    const design = normalizeObject(values && values.__design);
+    return {
+      theme: String(design.theme || 'default'),
+      backgroundColor: String(design.backgroundColor || ''),
+      gradient: String(design.gradient || ''),
+      textColor: String(design.textColor || ''),
+      accentColor: String(design.accentColor || '')
+    };
+  }
+
+  async function drawBackground(ctx, template, values) {
     const width = template.canvas.width;
     const height = template.canvas.height;
     const bg = template.background || {};
+    const design = getDesign(values || {});
+    const gradient = design.gradient || bg.gradient;
+    const color = design.backgroundColor || bg.color || '#ffffff';
 
     ctx.save();
-    ctx.fillStyle = bg.gradient ? gradientFromString(ctx, bg.gradient, width, height, bg.color) : (bg.color || '#ffffff');
+    ctx.fillStyle = gradient ? gradientFromString(ctx, gradient, width, height, color) : color;
     ctx.fillRect(0, 0, width, height);
 
-    if (bg.image) {
+    if (!design.gradient && bg.image) {
       try {
         const img = await loadImage(bg.image);
-        ctx.globalAlpha = 0.28;
+        ctx.globalAlpha = 0.24;
         drawCover(ctx, img, 0, 0, width, height, { zoom: 1 });
         ctx.globalAlpha = 1;
       } catch (error) {}
     }
 
-    ctx.globalAlpha = 0.18;
-    for (let i = 0; i < 26; i += 1) {
+    ctx.globalAlpha = design.theme === 'minimal' ? 0.08 : 0.15;
+    for (let i = 0; i < 24; i += 1) {
       ctx.beginPath();
       ctx.arc((i * 173) % width, (i * 311) % height, 2 + (i % 6), 0, Math.PI * 2);
       ctx.fillStyle = i % 2 ? '#ffffff' : '#111827';
@@ -94,14 +115,14 @@
 
   function drawPlaceholder(ctx, slot) {
     ctx.save();
-    ctx.fillStyle = 'rgba(255,255,255,.7)';
+    ctx.fillStyle = 'rgba(255,255,255,.72)';
     roundedRect(ctx, slot.x, slot.y, slot.width, slot.height, slot.radius || 20);
     ctx.fill();
     ctx.strokeStyle = 'rgba(15,23,42,.12)';
     ctx.lineWidth = 4;
     ctx.stroke();
     ctx.fillStyle = 'rgba(15,23,42,.35)';
-    ctx.font = `700 ${Math.max(24, slot.width / 10)}px Inter, Arial`;
+    ctx.font = `800 ${Math.max(24, slot.width / 10)}px Inter, Arial`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('PHOTO', slot.x + slot.width / 2, slot.y + slot.height / 2);
@@ -147,7 +168,7 @@
     const caption = photo && photo.caption !== undefined ? photo.caption : slot.caption;
     if (caption) {
       ctx.fillStyle = '#43352d';
-      ctx.font = `700 ${Math.max(22, slot.width / 15)}px Inter, Arial`;
+      ctx.font = `800 ${Math.max(22, slot.width / 15)}px Inter, Arial`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.fillText(String(caption).slice(0, 50), slot.x + slot.width / 2, slot.y + slot.height + 16, slot.width + 20);
@@ -155,12 +176,13 @@
     ctx.restore();
   }
 
-  function drawDecoration(ctx, item) {
+  function drawDecoration(ctx, item, values) {
+    const design = getDesign(values || {});
     const x = Number(item.x) || 0;
     const y = Number(item.y) || 0;
     const width = Number(item.width) || 80;
     const height = Number(item.height) || 80;
-    const color = item.color || '#111827';
+    const color = design.accentColor || item.color || '#111827';
     const cx = x + width / 2;
     const cy = y + height / 2;
 
@@ -287,6 +309,7 @@
 
   function drawTextElement(ctx, textElement, values, globalTextStyle) {
     const id = textElement.id;
+    const design = getDesign(values || {});
     const override = normalizeTextOverride(values && values[id]);
     let text = override.text !== undefined ? override.text : textElement.text;
     if (typeof text === 'object' || String(text || '').trim() === '[object Object]') text = textElement.text;
@@ -304,12 +327,34 @@
     ctx.translate(x + width / 2, y);
     ctx.rotate(((Number(textElement.rotation) || 0) * Math.PI) / 180);
     ctx.translate(-(x + width / 2), -y);
-    ctx.fillStyle = override.color || globalTextStyle.color || textElement.color || '#111827';
+    ctx.fillStyle = override.color || globalTextStyle.color || design.textColor || textElement.color || '#111827';
     ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", Inter, Arial, sans-serif`;
     ctx.textAlign = textElement.align || 'left';
     ctx.textBaseline = 'top';
     const drawX = textElement.align === 'center' ? x + width / 2 : textElement.align === 'right' ? x + width : x;
     wrapText(ctx, text, drawX, y, width, fontSize * 1.18);
+    ctx.restore();
+  }
+
+  function drawWatermark(ctx, template, values) {
+    const watermark = normalizeObject(values && values.__watermark);
+    if (!watermark.enabled) return;
+    const text = String(watermark.text || 'Aesthetic Gallery').slice(0, 60).trim();
+    if (!text) return;
+
+    const width = template.canvas.width;
+    const height = template.canvas.height;
+    const fontSize = Math.max(24, Math.round(width / 32));
+
+    ctx.save();
+    ctx.globalAlpha = 0.74;
+    ctx.font = `900 ${fontSize}px Inter, Arial, sans-serif`;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    ctx.fillStyle = watermark.color || 'rgba(15,23,42,.72)';
+    ctx.shadowColor = 'rgba(255,255,255,.72)';
+    ctx.shadowBlur = 10;
+    ctx.fillText(text, width - Math.max(34, width * .04), height - Math.max(34, height * .025));
     ctx.restore();
   }
 
@@ -323,7 +368,7 @@
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.clearRect(0, 0, template.canvas.width, template.canvas.height);
 
-    await drawBackground(ctx, template);
+    await drawBackground(ctx, template, textValues || {});
 
     const photoMap = Array.isArray(photos) ? Object.fromEntries(photos.map((item) => [item.slotId || item.id, item])) : (photos || {});
     const drawItems = [];
@@ -335,7 +380,7 @@
       if (item.kind === 'slot') {
         await drawPhotoSlot(ctx, item.slot, photoMap[item.slot.id]);
       } else {
-        drawDecoration(ctx, item.decoration);
+        drawDecoration(ctx, item.decoration, textValues || {});
       }
     }
 
@@ -345,11 +390,22 @@
       .sort((a, b) => (a.zIndex || 8) - (b.zIndex || 8))
       .forEach((textElement) => drawTextElement(ctx, textElement, textValues || {}, textStyle));
 
+    drawWatermark(ctx, template, textValues || {});
     return canvas;
   }
 
   function canvasToBlob(canvas, type, quality) {
-    return new Promise((resolve) => canvas.toBlob(resolve, type, quality));
+    return new Promise((resolve) => {
+      if (canvas.toBlob) {
+        canvas.toBlob((blob) => resolve(blob), type, quality);
+        return;
+      }
+      const dataUrl = canvas.toDataURL(type, quality);
+      const bin = atob(dataUrl.split(',')[1]);
+      const arr = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i += 1) arr[i] = bin.charCodeAt(i);
+      resolve(new Blob([arr], { type }));
+    });
   }
 
   window.TemplateRenderer = {

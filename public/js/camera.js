@@ -19,9 +19,10 @@
   let mode = 'user';
   let activeSlotIndex = 0;
   const photos = {};
-  const textValues = { __date: today };
+  const textValues = { __date: today, __watermark: { enabled: false, text: 'Aesthetic Gallery' }, __design: { theme: 'default' } };
+  const draftKey = `gallery-create-draft:${template.slug}`;
 
-  template.textElements.forEach((item) => {
+  (template.textElements || []).forEach((item) => {
     textValues[item.id] = { text: String(item.text || '').replace('{{date}}', today) };
   });
 
@@ -31,12 +32,36 @@
   }
 
   function currentSlot() {
-    return template.photoSlots[activeSlotIndex];
+    return (template.photoSlots || [])[activeSlotIndex];
+  }
+
+  function saveCreateDraft() {
+    try {
+      localStorage.setItem(draftKey, JSON.stringify({ photos, activeSlotIndex, updatedAt: Date.now() }));
+    } catch (error) {}
+  }
+
+  function restoreCreateDraft() {
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      if (!draft || !draft.photos) return;
+      Object.values(draft.photos).forEach((photo) => {
+        if (photo && photo.slotId && photo.dataUrl) photos[photo.slotId] = photo;
+      });
+      if (Number.isInteger(draft.activeSlotIndex)) activeSlotIndex = Math.min(Math.max(draft.activeSlotIndex, 0), (template.photoSlots || []).length - 1);
+      safeMessage('Draft foto sebelumnya dipulihkan dari browser ini.');
+    } catch (error) {}
+  }
+
+  function clearCreateDraft() {
+    try { localStorage.removeItem(draftKey); } catch (error) {}
   }
 
   function updateSlotButtons() {
     slotButtons.innerHTML = '';
-    template.photoSlots.forEach((slot, index) => {
+    (template.photoSlots || []).forEach((slot, index) => {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = `slot-btn ${index === activeSlotIndex ? 'active' : ''} ${photos[slot.id] ? 'filled' : ''}`;
@@ -44,13 +69,14 @@
       button.addEventListener('click', () => {
         activeSlotIndex = index;
         updateSlotButtons();
+        saveCreateDraft();
         safeMessage(`Slot ${index + 1} aktif. Ambil foto untuk mengganti slot ini.`);
       });
       slotButtons.appendChild(button);
     });
 
     const filled = Object.keys(photos).length;
-    slotProgress.textContent = `${filled}/${template.photoSlots.length}`;
+    slotProgress.textContent = `${filled}/${(template.photoSlots || []).length}`;
     openEditorBtn.disabled = filled === 0;
   }
 
@@ -68,20 +94,12 @@
   function constraintsFor(cameraMode) {
     if (cameraMode === 'environment') {
       return {
-        video: {
-          facingMode: { exact: 'environment' },
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
+        video: { facingMode: { exact: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false
       };
     }
     return {
-      video: {
-        facingMode: 'user',
-        width: { ideal: 1280 },
-        height: { ideal: 720 }
-      },
+      video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
       audio: false
     };
   }
@@ -90,15 +108,11 @@
     try {
       await stopCamera();
       mode = cameraMode;
-      let constraints = constraintsFor(cameraMode);
       try {
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        stream = await navigator.mediaDevices.getUserMedia(constraintsFor(cameraMode));
       } catch (error) {
         if (cameraMode === 'environment') {
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
-            audio: false
-          });
+          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
         } else {
           throw error;
         }
@@ -134,22 +148,28 @@
   }
 
   function captureFrame() {
+    const sourceWidth = video.videoWidth || 1280;
+    const sourceHeight = video.videoHeight || 720;
+    const maxSide = 1280;
+    const ratio = Math.min(1, maxSide / Math.max(sourceWidth, sourceHeight));
+    const width = Math.round(sourceWidth * ratio);
+    const height = Math.round(sourceHeight * ratio);
     const temp = document.createElement('canvas');
-    const width = video.videoWidth || 1280;
-    const height = video.videoHeight || 720;
     temp.width = width;
     temp.height = height;
     const ctx = temp.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     if (mode === 'user') {
       ctx.translate(width, 0);
       ctx.scale(-1, 1);
     }
     ctx.drawImage(video, 0, 0, width, height);
-    return temp.toDataURL('image/jpeg', 0.92);
+    return temp.toDataURL('image/jpeg', 0.78);
   }
 
   function nextEmptySlotIndex() {
-    return template.photoSlots.findIndex((slot) => !photos[slot.id]);
+    return (template.photoSlots || []).findIndex((slot) => !photos[slot.id]);
   }
 
   async function createResultAndOpenEditor() {
@@ -170,6 +190,7 @@
       });
       const data = await response.json();
       if (!data.success) throw new Error('failed');
+      clearCreateDraft();
       window.location.href = `/editor/${data.id}`;
     } catch (error) {
       openEditorBtn.disabled = false;
@@ -192,15 +213,14 @@
         transform: { zoom: 1, rotate: 0, offsetX: 0, offsetY: 0 }
       };
       flashEffect();
-      safeMessage(`Foto masuk ke slot ${activeSlotIndex + 1}.`);
+      safeMessage(`Foto masuk ke slot ${activeSlotIndex + 1}. Gambar sudah dikompres agar ringan di HP.`);
       const nextIndex = nextEmptySlotIndex();
-      if (nextIndex !== -1) {
-        activeSlotIndex = nextIndex;
-      }
+      if (nextIndex !== -1) activeSlotIndex = nextIndex;
       updateSlotButtons();
+      saveCreateDraft();
       await renderPreview();
 
-      if (Object.keys(photos).length === template.photoSlots.length) {
+      if (Object.keys(photos).length === (template.photoSlots || []).length) {
         safeMessage('Semua slot terisi. Membuka editor...');
         await wait(500);
         await createResultAndOpenEditor();
@@ -219,6 +239,7 @@
   openEditorBtn.addEventListener('click', createResultAndOpenEditor);
   window.addEventListener('beforeunload', stopCamera);
 
+  restoreCreateDraft();
   updateSlotButtons();
   renderPreview();
 

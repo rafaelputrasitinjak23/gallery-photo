@@ -4,64 +4,96 @@
 <body>
   <%- include('../partials/navbar') %>
   <main>
-    <section class="hero-bg overflow-hidden px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-      <div class="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1.05fr_.95fr]">
+    <% const heroTemplate = templates[0]; const popularTemplates = templates.slice(0, 6); const onePhoto = templates.filter(t => Array.isArray(t.photoSlots) && t.photoSlots.length === 1).slice(0, 3); const storyTemplates = templates.filter(t => t.ratio === '9:16').slice(0, 3); %>
+    <section class="hero-bg overflow-hidden px-4 py-12 sm:px-6 lg:px-8 lg:py-20">
+      <div class="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[1.02fr_.98fr]">
         <div>
           <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-4 py-2 text-sm font-bold text-slate-600 shadow-soft backdrop-blur-xl">
             <span class="h-2 w-2 rounded-full bg-rose-400"></span>
-            Kamera langsung masuk ke template estetik
+            Bisa di-install seperti aplikasi dan ringan untuk HP
           </div>
-          <h1 class="max-w-3xl text-5xl font-black tracking-tight text-slate-950 sm:text-6xl lg:text-7xl">Buat Galeri Foto Estetik dari Kamera Kamu</h1>
-          <p class="mt-6 max-w-2xl text-lg leading-8 text-slate-600">Pilih template poster, story, moodboard, atau polaroid. Ambil foto dari kamera depan/belakang, edit teks kecil, beri filter, lalu download hasil sebagai PNG atau JPG.</p>
+          <h1 class="max-w-3xl text-4xl font-black tracking-tight text-slate-950 sm:text-6xl lg:text-7xl">Buat Galeri Foto Estetik dari Kamera Kamu</h1>
+          <p class="mt-6 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">Pilih template, ambil foto dari kamera depan/belakang, remix warna, edit tulisan, crop langsung di canvas, lalu download atau share hasilnya.</p>
           <div class="mt-8 flex flex-col gap-3 sm:flex-row">
             <a href="/templates" class="inline-flex items-center justify-center rounded-full bg-slate-950 px-7 py-4 text-sm font-black text-white shadow-soft transition hover:-translate-y-1 hover:bg-slate-800">Mulai Buat Galeri</a>
-            <a href="/history" class="inline-flex items-center justify-center rounded-full border border-white/80 bg-white/70 px-7 py-4 text-sm font-black text-slate-800 shadow-soft backdrop-blur-xl transition hover:-translate-y-1">Lihat Riwayat</a>
+            <a href="#template-populer" class="inline-flex items-center justify-center rounded-full border border-white/80 bg-white/70 px-7 py-4 text-sm font-black text-slate-800 shadow-soft backdrop-blur-xl transition hover:-translate-y-1">Lihat Preview Template</a>
+            <button data-install-app class="hidden inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-7 py-4 text-sm font-black text-slate-800 shadow-soft" type="button">Install App</button>
           </div>
           <div class="mt-8 grid max-w-xl grid-cols-3 gap-3 text-center">
             <div class="stat-card"><b>10+</b><span>Template</span></div>
-            <div class="stat-card"><b>2</b><span>Kamera</span></div>
-            <div class="stat-card"><b>24 Jam</b><span>Auto Delete</span></div>
+            <div class="stat-card"><b>Draft</b><span>Auto Save</span></div>
+            <div class="stat-card"><b>Share</b><span>Langsung</span></div>
           </div>
         </div>
-        <div class="relative min-h-[560px]">
-          <% templates.slice(0, 3).forEach((template, index) => { %>
-            <div class="floating-preview absolute rounded-[2rem] bg-white/75 p-4 shadow-float backdrop-blur-2xl <%= index === 0 ? 'left-8 top-6 w-64 rotate-[-7deg]' : index === 1 ? 'right-4 top-40 w-72 rotate-[5deg]' : 'bottom-8 left-24 w-72 rotate-[-2deg]' %>" style="animation-delay:<%= index * .6 %>s">
-              <img src="<%= template.previewImage %>" alt="<%= template.name %>" class="aspect-[4/5] w-full rounded-[1.5rem] object-cover" />
-              <div class="mt-3 flex items-center justify-between">
+
+        <% if (heroTemplate) { %>
+          <div class="hero-showcase">
+            <div class="hero-showcase-card">
+              <div class="mb-4 flex items-center justify-between gap-3">
                 <div>
-                  <p class="font-black text-slate-900"><%= template.name %></p>
-                  <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400"><%= template.category %></p>
+                  <p class="text-xs font-black uppercase tracking-[0.18em] text-rose-500">Preview hasil akhir</p>
+                  <h2 class="mt-1 text-2xl font-black text-slate-950"><%= heroTemplate.name %></h2>
                 </div>
-                <span class="rounded-full bg-slate-950 px-3 py-1 text-xs font-bold text-white"><%= template.ratio %></span>
+                <span class="pill shrink-0"><%= heroTemplate.ratio %></span>
+              </div>
+              <a href="/templates/<%= heroTemplate.slug %>" class="block">
+                <div class="template-preview-stage hero-preview-stage" data-ratio="<%= heroTemplate.ratio %>">
+                  <img src="<%= heroTemplate.previewImage %>" alt="Preview <%= heroTemplate.name %>" class="template-preview-img" decoding="async" fetchpriority="high" />
+                </div>
+              </a>
+              <div class="mt-4 grid grid-cols-2 gap-3">
+                <% templates.slice(1, 3).forEach((template) => { %>
+                  <a href="/templates/<%= template.slug %>" class="mini-preview-card">
+                    <img src="<%= template.previewImage %>" alt="Preview <%= template.name %>" loading="lazy" decoding="async" />
+                    <span><%= template.name %></span>
+                  </a>
+                <% }) %>
               </div>
             </div>
-          <% }) %>
-          <div class="absolute right-16 top-6 h-28 w-28 rounded-full bg-amber-200/60 blur-2xl"></div>
-          <div class="absolute bottom-20 right-6 h-32 w-32 rounded-full bg-rose-200/70 blur-2xl"></div>
+          </div>
+        <% } %>
+      </div>
+    </section>
+
+    <section class="px-4 py-8 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl rounded-[2rem] bg-white/70 p-5 shadow-soft backdrop-blur-xl">
+        <p class="section-kicker">Rekomendasi cepat</p>
+        <div class="mt-4 grid gap-3 md:grid-cols-4">
+          <a href="/templates?filter=trending" class="quick-category-card">Trending</a>
+          <a href="/templates?filter=light" class="quick-category-card">Paling ringan di HP</a>
+          <a href="/templates?filter=one-photo" class="quick-category-card">Template 1 foto</a>
+          <a href="/templates?filter=story" class="quick-category-card">Story 9:16</a>
         </div>
       </div>
     </section>
 
-    <section class="px-4 py-16 sm:px-6 lg:px-8">
+    <section id="template-populer" class="px-4 py-14 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-7xl">
         <div class="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <p class="section-kicker">Template populer</p>
-            <h2 class="section-title">Pilih gaya yang cocok untuk fotomu</h2>
+            <h2 class="section-title">Lihat dulu hasil akhirnya, baru pilih template</h2>
+            <p class="mt-3 max-w-2xl text-slate-600">Preview mengikuti layout asli: posisi slot foto, teks, tanggal, caption, dan dekorasi. Tekan Preview Besar untuk melihat detailnya.</p>
           </div>
           <a href="/templates" class="font-black text-slate-950 underline decoration-slate-300 underline-offset-8">Lihat semua template</a>
         </div>
-        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <% templates.forEach((template) => { %>
-            <article class="template-card group">
-              <a href="/templates/<%= template.slug %>">
-                <img src="<%= template.previewImage %>" alt="<%= template.name %>" class="aspect-[4/5] w-full rounded-[1.6rem] object-cover transition duration-300 group-hover:scale-[1.02]" />
+        <div class="template-grid-preview">
+          <% popularTemplates.forEach((template) => { const slots = Array.isArray(template.photoSlots) ? template.photoSlots : []; %>
+            <article class="template-card template-card-preview template-item group" data-id="<%= template.slug %>" data-preview="<%= template.previewImage %>" data-title="<%= template.name %>" data-description="<%= template.description %>" data-ratio="<%= template.ratio %>" data-slots="<%= slots.length %>">
+              <div class="card-action-row">
+                <button class="favorite-btn" data-favorite="<%= template.slug %>" type="button" aria-label="Simpan favorit">♡</button>
+                <button class="preview-btn" type="button">Preview Besar</button>
+              </div>
+              <a href="/templates/<%= template.slug %>" aria-label="Lihat detail <%= template.name %>">
+                <div class="template-preview-stage" data-ratio="<%= template.ratio %>">
+                  <img src="<%= template.previewImage %>" alt="Preview hasil template <%= template.name %>" class="template-preview-img transition duration-300 group-hover:scale-[1.015]" loading="lazy" decoding="async" />
+                </div>
               </a>
               <div class="pt-5">
-                <div class="mb-3 flex items-center gap-2">
+                <div class="mb-3 flex flex-wrap items-center gap-2">
                   <span class="pill"><%= template.category %></span>
                   <span class="pill"><%= template.ratio %></span>
-                  <span class="pill"><%= template.photoSlots.length %> slot</span>
+                  <span class="pill"><%= slots.length %> slot</span>
                 </div>
                 <h3 class="text-xl font-black text-slate-950"><%= template.name %></h3>
                 <p class="mt-2 line-clamp-2 text-sm leading-6 text-slate-600"><%= template.description %></p>
@@ -74,5 +106,6 @@
     </section>
   </main>
   <%- include('../partials/footer') %>
+  <script src="/js/gallery.js" defer></script>
 </body>
 </html>

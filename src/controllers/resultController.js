@@ -25,7 +25,7 @@ async function createResultApi(req, res, next) {
       return res.status(404).json({ success: false, message: 'Template tidak ditemukan.' });
     }
 
-    if (!payload.photos.length) {
+    if (!(Array.isArray(payload.photos) && payload.photos.length)) {
       return res.status(400).json({ success: false, message: 'Minimal satu foto diperlukan.' });
     }
 

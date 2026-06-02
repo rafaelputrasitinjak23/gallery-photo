@@ -44,3 +44,28 @@ Buka URL project lalu cek:
 ```
 
 Admin otomatis dibuat dari `ADMIN_EMAIL` dan `ADMIN_PASSWORD` saat serverless function pertama kali berjalan.
+
+## Catatan Agar Ringan di HP
+
+- Gunakan gambar preview dari folder `public/images/templates` karena sudah dioptimasi.
+- Jangan pakai gambar mentah berukuran besar untuk `previewImage` template admin.
+- Untuk preview admin, kompres gambar dulu ke lebar sekitar 720px.
+- Hindari terlalu banyak efek blur/animasi pada template custom.
+- Cache static asset sudah diatur di `vercel.json` untuk gambar, CSS, dan JS.
+
+## Catatan PWA di Vercel
+
+File `manifest.json` dan `sw.js` sudah di-route dari `vercel.json`. Setelah deploy, browser bisa menampilkan opsi install app bila memenuhi syarat PWA.
+
+Pastikan environment variable production tetap diisi:
+
+```env
+APP_URL=https://domain-kamu.vercel.app
+SESSION_SECRET=random_secret_panjang
+DATABASE_URL=mongodb+srv://...
+USE_MONGO_SESSION=true
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=password_admin
+AUTO_DELETE_HOURS=24
+NODE_ENV=production
+```

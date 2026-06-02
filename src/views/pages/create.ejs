@@ -4,6 +4,7 @@
 <body>
   <%- include('../partials/navbar') %>
   <main class="px-4 py-8 sm:px-6 lg:px-8">
+    <% const slots = Array.isArray(template.photoSlots) ? template.photoSlots : []; %>
     <section class="mx-auto max-w-7xl">
       <div class="mb-6 rounded-[2rem] bg-white/70 p-6 shadow-soft backdrop-blur-xl">
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -49,7 +50,7 @@
               <p class="section-kicker">Preview template</p>
               <h2 class="text-2xl font-black text-slate-950">Foto melayang otomatis</h2>
             </div>
-            <span id="slotProgress" class="rounded-full bg-slate-950 px-4 py-2 text-xs font-black text-white">0/<%= template.photoSlots.length %></span>
+            <span id="slotProgress" class="rounded-full bg-slate-950 px-4 py-2 text-xs font-black text-white">0/<%= slots.length %></span>
           </div>
           <div class="mx-auto max-h-[72vh] max-w-xl overflow-auto rounded-[1.5rem] bg-slate-100 p-4">
             <canvas id="templateCanvas" class="mx-auto w-full rounded-[1rem] shadow-soft"></canvas>
@@ -60,7 +61,7 @@
   </main>
   <script id="templateData" type="application/json"><%- JSON.stringify(template).replace(/</g, '\\u003c') %></script>
   <script id="todayData" type="application/json"><%- JSON.stringify(today).replace(/</g, '\\u003c') %></script>
-  <script src="/js/template-renderer.js"></script>
-  <script src="/js/camera.js"></script>
+  <script src="/js/template-renderer.js" defer></script>
+  <script src="/js/camera.js" defer></script>
 </body>
 </html>

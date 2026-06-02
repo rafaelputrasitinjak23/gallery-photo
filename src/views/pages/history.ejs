@@ -10,7 +10,8 @@
         <h1 class="section-title">Hasil yang pernah dibuat</h1>
         <p class="mt-3 text-slate-600">Hasil disimpan sementara dan terhapus otomatis setelah batas waktu privasi.</p>
       </div>
-      <% if (!results.length) { %>
+      <% const safeResults = Array.isArray(results) ? results : []; %>
+      <% if (!safeResults.length) { %>
         <div class="rounded-[2rem] bg-white/70 p-10 text-center shadow-soft backdrop-blur-xl">
           <h2 class="text-2xl font-black text-slate-950">Belum ada hasil</h2>
           <p class="mt-2 text-slate-600">Buat galeri pertamamu dari halaman template.</p>
@@ -18,16 +19,16 @@
         </div>
       <% } else { %>
         <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <% results.forEach((result) => { %>
+          <% safeResults.forEach((result) => { const photos = Array.isArray(result.photos) ? result.photos : []; %>
             <article class="result-card" data-id="<%= result._id %>">
-              <% const image = result.thumbnail || result.finalImage || (result.photos && result.photos[0] ? result.photos[0].dataUrl : ''); %>
+              <% const image = result.thumbnail || result.finalImage || (photos[0] ? photos[0].dataUrl : ''); %>
               <% if (image) { %>
-                <img src="<%= image %>" alt="<%= result.templateName %>" class="aspect-[4/5] w-full rounded-[1.6rem] object-cover" />
+                <img src="<%= image %>" alt="<%= result.templateName %>" class="aspect-[4/5] w-full rounded-[1.6rem] object-cover" loading="lazy" decoding="async" />
               <% } else { %>
                 <div class="grid aspect-[4/5] place-items-center rounded-[1.6rem] bg-slate-100 text-slate-400">Belum ada thumbnail</div>
               <% } %>
               <div class="pt-5">
-                <div class="mb-2 flex gap-2"><span class="pill"><%= result.ratio %></span><span class="pill"><%= result.photos.length %> foto</span></div>
+                <div class="mb-2 flex gap-2"><span class="pill"><%= result.ratio %></span><span class="pill"><%= photos.length %> foto</span></div>
                 <h2 class="text-xl font-black text-slate-950"><%= result.templateName %></h2>
                 <p class="mt-1 text-sm font-semibold text-slate-500"><%= new Date(result.createdAt).toLocaleString('id-ID') %></p>
                 <div class="mt-5 grid grid-cols-2 gap-3">
@@ -42,6 +43,6 @@
     </section>
   </main>
   <%- include('../partials/footer') %>
-  <script src="/js/gallery.js"></script>
+  <script src="/js/gallery.js" defer></script>
 </body>
 </html>

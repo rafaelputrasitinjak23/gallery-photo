@@ -3,14 +3,14 @@
 <head><%- include('../partials/head') %></head>
 <body>
   <%- include('../partials/navbar') %>
-  <main class="px-4 py-12 sm:px-6 lg:px-8">
+  <main class="px-4 py-10 sm:px-6 lg:px-8">
     <section class="mx-auto max-w-7xl">
       <div class="mb-8 rounded-[2rem] bg-white/70 p-6 shadow-soft backdrop-blur-xl md:p-8">
         <p class="section-kicker">Galeri template</p>
         <div class="mt-2 grid gap-5 md:grid-cols-[1fr_auto] md:items-end">
           <div>
             <h1 class="section-title">Cari template foto estetik</h1>
-            <p class="mt-3 max-w-2xl text-slate-600">Semua template punya slot foto, teks kecil, tanggal, doodle, filter, dan output siap download.</p>
+            <p class="mt-3 max-w-2xl text-slate-600">Setiap card menampilkan preview hasil akhir template. Simpan favorit, lihat preview besar, atau filter template yang paling ringan untuk HP.</p>
           </div>
           <a href="/history" class="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-800 shadow-sm">Riwayat saya</a>
         </div>
@@ -23,19 +23,34 @@
             <% }) %>
           </select>
         </div>
+        <div id="quickFilterButtons" class="mt-5 flex flex-wrap gap-2">
+          <button class="quick-filter active" type="button" data-filter="all">Semua</button>
+          <button class="quick-filter" type="button" data-filter="favorite">Favorit</button>
+          <button class="quick-filter" type="button" data-filter="trending">Trending</button>
+          <button class="quick-filter" type="button" data-filter="light">Paling ringan</button>
+          <button class="quick-filter" type="button" data-filter="one-photo">1 foto</button>
+          <button class="quick-filter" type="button" data-filter="story">Story 9:16</button>
+          <button class="quick-filter" type="button" data-filter="multi">Multi-slot</button>
+        </div>
       </div>
 
-      <div id="templateGrid" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <% templates.forEach((template) => { %>
-          <article class="template-card template-item group" data-name="<%= template.name.toLowerCase() %>" data-category="<%= template.category %>" data-description="<%= template.description.toLowerCase() %>">
-            <a href="/templates/<%= template.slug %>">
-              <img src="<%= template.previewImage %>" alt="<%= template.name %>" class="aspect-[4/5] w-full rounded-[1.6rem] object-cover transition duration-300 group-hover:scale-[1.02]" />
+      <div id="templateGrid" class="template-grid-preview">
+        <% templates.forEach((template, index) => { const slots = Array.isArray(template.photoSlots) ? template.photoSlots : []; const tags = [index < 4 ? 'trending' : '', slots.length <= 2 ? 'light' : '', slots.length === 1 ? 'one-photo' : '', template.ratio === '9:16' ? 'story' : '', slots.length > 2 ? 'multi' : ''].filter(Boolean).join(' '); %>
+          <article class="template-card template-card-preview template-item group" data-id="<%= template.slug %>" data-name="<%= template.name.toLowerCase() %>" data-category="<%= template.category %>" data-description="<%= template.description.toLowerCase() %>" data-tags="<%= tags %>" data-preview="<%= template.previewImage %>" data-title="<%= template.name %>" data-ratio="<%= template.ratio %>" data-slots="<%= slots.length %>">
+            <div class="card-action-row">
+              <button class="favorite-btn" data-favorite="<%= template.slug %>" type="button" aria-label="Simpan favorit">♡</button>
+              <button class="preview-btn" type="button">Preview Besar</button>
+            </div>
+            <a href="/templates/<%= template.slug %>" aria-label="Lihat detail <%= template.name %>">
+              <div class="template-preview-stage" data-ratio="<%= template.ratio %>">
+                <img src="<%= template.previewImage %>" alt="Preview hasil template <%= template.name %>" class="template-preview-img transition duration-300 group-hover:scale-[1.015]" loading="lazy" decoding="async" />
+              </div>
             </a>
             <div class="pt-5">
               <div class="mb-3 flex flex-wrap items-center gap-2">
                 <span class="pill"><%= template.category %></span>
                 <span class="pill"><%= template.ratio %></span>
-                <span class="pill"><%= template.photoSlots.length %> slot foto</span>
+                <span class="pill"><%= slots.length %> slot foto</span>
               </div>
               <h2 class="text-xl font-black text-slate-950"><%= template.name %></h2>
               <p class="mt-2 line-clamp-2 text-sm leading-6 text-slate-600"><%= template.description %></p>
@@ -49,11 +64,11 @@
       </div>
       <div id="emptyTemplate" class="hidden rounded-[2rem] bg-white/70 p-10 text-center shadow-soft backdrop-blur-xl">
         <h3 class="text-2xl font-black text-slate-950">Template tidak ditemukan</h3>
-        <p class="mt-2 text-slate-600">Coba kata kunci atau kategori lain.</p>
+        <p class="mt-2 text-slate-600">Coba kata kunci, kategori, atau filter lain.</p>
       </div>
     </section>
   </main>
   <%- include('../partials/footer') %>
-  <script src="/js/gallery.js"></script>
+  <script src="/js/gallery.js" defer></script>
 </body>
 </html>

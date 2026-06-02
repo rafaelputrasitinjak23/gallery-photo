@@ -124,3 +124,35 @@ NODE_ENV=production
 ```
 
 Detail lengkap ada di `VERCEL_DEPLOY.md`.
+
+## Optimasi Mobile Terbaru
+
+Versi ini sudah dioptimalkan agar halaman utama lebih ringan di HP:
+
+- Preview template sudah diganti menjadi gambar hasil akhir yang berbeda untuk setiap template.
+- Ukuran preview PNG diperkecil dan dioptimasi.
+- Asset preview WebP juga disediakan di folder template.
+- Gambar template memakai lazy loading dan async decoding.
+- Halaman utama hanya menampilkan template populer, sedangkan semua template tetap ada di halaman `/templates`.
+- Efek blur, shadow, dan animasi dikurangi otomatis di layar mobile.
+- Static asset di Vercel diberi cache header agar kunjungan berikutnya lebih ringan.
+
+Jika template dari database masih terlihat lama, jalankan seed ulang atau update data `previewImage` template agar memakai file preview terbaru di folder `public/images/templates`.
+
+## Update Fitur Lengkap
+
+Versi ini sudah ditambah beberapa fitur tambahan agar lebih nyaman dipakai di HP:
+
+- PWA: website bisa di-install seperti aplikasi melalui browser yang mendukung.
+- Favorite template: tombol hati menyimpan pilihan di browser user.
+- Preview besar: user bisa melihat contoh hasil template sebelum memilih.
+- Filter cepat: Trending, Paling Ringan, 1 Foto, Story 9:16, dan Multi-slot.
+- Share hasil: editor memakai Web Share API jika browser mendukung, dengan fallback download.
+- Auto enhance foto: tombol Percantik menerapkan filter otomatis pada foto aktif.
+- Crop langsung di canvas: drag untuk geser foto, scroll/pinch untuk zoom.
+- Remix tema: pilihan Default, Cream, Pink, Blue, Dark, dan Minimal.
+- Watermark opsional: user bisa mengaktifkan dan mengganti teks watermark.
+- Draft otomatis: create page dan editor menyimpan draft lokal di browser.
+- Kompres gambar: foto dari kamera dikompres sebelum disimpan agar lebih ringan di HP.
+
+Catatan: draft dan favorite tersimpan di localStorage browser user, bukan database. Hasil final tetap mengikuti sistem riwayat dan auto-delete sesuai konfigurasi `AUTO_DELETE_HOURS`.

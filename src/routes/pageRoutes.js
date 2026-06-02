@@ -15,7 +15,7 @@ router.get('/', async (req, res, next) => {
     const templates = await getTemplates({ activeOnly: true });
     return res.render('pages/home', {
       title: 'Galeri Template Foto Estetik',
-      templates: templates.slice(0, 6),
+      templates,
       today: formatDate()
     });
   } catch (error) {

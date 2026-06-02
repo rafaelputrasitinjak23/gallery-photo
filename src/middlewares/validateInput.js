@@ -83,6 +83,30 @@ function sanitizeTextValue(value) {
   };
 }
 
+function sanitizeDesignValue(value) {
+  if (!value || typeof value !== 'object') return {};
+  const safeGradient = cleanRawText(value.gradient, 220);
+  const safeBackground = /^#[0-9a-fA-F]{6}$/.test(String(value.backgroundColor || '')) ? String(value.backgroundColor) : '';
+  const safeText = /^#[0-9a-fA-F]{6}$/.test(String(value.textColor || '')) ? String(value.textColor) : '';
+  const safeAccent = /^#[0-9a-fA-F]{6}$/.test(String(value.accentColor || '')) ? String(value.accentColor) : '';
+  return {
+    theme: cleanRawText(value.theme, 40),
+    backgroundColor: safeBackground,
+    gradient: safeGradient,
+    textColor: safeText,
+    accentColor: safeAccent
+  };
+}
+
+function sanitizeWatermarkValue(value) {
+  if (!value || typeof value !== 'object') return { enabled: false, text: '' };
+  return {
+    enabled: Boolean(value.enabled),
+    text: cleanRawText(value.text, 80),
+    color: /^#[0-9a-fA-F]{6}$/.test(String(value.color || '')) ? String(value.color) : ''
+  };
+}
+
 function sanitizeResultPayload(payload = {}) {
   const photos = Array.isArray(payload.photos) ? payload.photos.slice(0, 12).map((photo) => ({
     slotId: cleanRawText(photo.slotId || photo.id, 80),
@@ -96,7 +120,16 @@ function sanitizeResultPayload(payload = {}) {
   if (payload.textValues && typeof payload.textValues === 'object') {
     Object.entries(payload.textValues).slice(0, 30).forEach(([key, value]) => {
       const safeKey = cleanRawText(key, 80);
-      if (safeKey) textValues[safeKey] = sanitizeTextValue(value);
+      if (!safeKey) return;
+      if (safeKey === '__date') {
+        textValues[safeKey] = cleanRawText(typeof value === 'string' ? value : value && value.text, 80);
+      } else if (safeKey === '__design') {
+        textValues[safeKey] = sanitizeDesignValue(value);
+      } else if (safeKey === '__watermark') {
+        textValues[safeKey] = sanitizeWatermarkValue(value);
+      } else {
+        textValues[safeKey] = sanitizeTextValue(value);
+      }
     });
   }
 
